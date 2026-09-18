@@ -4,17 +4,10 @@ session_start();
 mysqli_report(MYSQLI_REPORT_OFF);
 
 $host = getenv('DB_HOST');
-if (empty($host) && getenv('VERCEL') === '1') {
-    $host = null;
-} elseif (empty($host)) {
-    $host = 'localhost';
-}
-
-$user = getenv('DB_USER') ?: 'root';
-$password = getenv('DB_PASSWORD') ?: '';
-$database = getenv('DB_NAME') ?: 'lab_app';
+$user = getenv('DB_USER');
+$password = getenv('DB_PASSWORD');
+$database = getenv('DB_NAME');
 $port = getenv('DB_PORT') ?: 3306;
-$useSsl = filter_var(getenv('DB_SSL') ?: false, FILTER_VALIDATE_BOOLEAN);
 
 $connection = null;
 
@@ -30,6 +23,10 @@ if (!empty($host) && !empty($user) && !empty($database)) {
         $connection = null;
         $_SESSION['db_error'] = 'Database connection failed: ' . $e->getMessage();
     }
+}
+
+if (!$connection) {
+    $_SESSION['db_error'] = 'Missing or invalid MySQL environment variables. Set DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, and DB_PORT in Vercel.';
 }
 
 if ($connection) {
