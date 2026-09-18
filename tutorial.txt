@@ -1,0 +1,22 @@
+LAB 07 - Create New User
+
+Objectives:
+1. Create a user form.
+2. Validate form data.
+3. Insert a new user record into the users table.
+
+Instructions:
+1. Start Apache and MySQL in XAMPP.
+2. Make sure the database lab_app and users table already exist.
+3. Copy this folder to C:\xampp\htdocs.
+4. Open: http://localhost/lab_07_create_user/user_add.php
+5. Fill out the form and click Add.
+
+Expected Output:
+The new record is inserted into the users table.
+
+Student Activity:
+Add at least three user records.
+
+Submission:
+Submit screenshots of the form and phpMyAdmin users table.
