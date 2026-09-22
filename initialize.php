@@ -3,36 +3,29 @@ session_start();
 
 mysqli_report(MYSQLI_REPORT_OFF);
 
-$host = getenv('DB_HOST');
-$user = getenv('DB_USER');
-$password = getenv('DB_PASSWORD');
-$database = getenv('DB_NAME');
-$port = getenv('DB_PORT') ?: 3306;
+$host = trim(getenv('DB_HOST') ?: '');
+$user = trim(getenv('DB_USER') ?: '');
+$password = getenv('DB_PASSWORD') ?: '';
+$database = trim(getenv('DB_NAME') ?: '');
+$port = (int) (getenv('DB_PORT') ?: 3306);
 
 $connection = null;
 
 if (!empty($host) && !empty($user) && !empty($database)) {
     try {
-        $connection = mysqli_init();
-        
-        // Point to the Aiven CA certificate file
-        $connection->ssl_set(NULL, NULL, __DIR__ . '/ca.pem', NULL, NULL);
-        
-        // Connect using the SSL flag
-        $connection->real_connect($host, $user, $password, $database, (int) $port, NULL, MYSQLI_CLIENT_SSL);
+        $conn = mysqli_init();
+        $conn->ssl_set(NULL, NULL, NULL, NULL, NULL);
 
-        if ($connection->connect_error) {
-            $connection = null;
-            $_SESSION['db_error'] = 'Database connection failed: ' . $connection->connect_error;
+        if (@$conn->real_connect($host, $user, $password, $database, $port, NULL, MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT)) {
+            $connection = $conn;
+        } else {
+            $_SESSION['db_error'] = 'Database connection failed: ' . mysqli_connect_error();
         }
     } catch (Throwable $e) {
-        $connection = null;
-        $_SESSION['db_error'] = 'Database connection failed: ' . $e->getMessage();
+        $_SESSION['db_error'] = 'Database error: ' . $e->getMessage();
     }
-}
-
-if (!$connection) {
-    $_SESSION['db_error'] = 'Missing or invalid MySQL environment variables.';
+} else {
+    $_SESSION['db_error'] = 'Missing required database environment variables.';
 }
 
 if ($connection) {
