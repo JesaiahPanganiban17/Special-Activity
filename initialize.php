@@ -13,11 +13,17 @@ $connection = null;
 
 if (!empty($host) && !empty($user) && !empty($database)) {
     try {
-        $connection = new mysqli($host, $user, $password, $database, (int) $port);
+        $connection = mysqli_init();
+        
+        // Point to the Aiven CA certificate file
+        $connection->ssl_set(NULL, NULL, __DIR__ . '/ca.pem', NULL, NULL);
+        
+        // Connect using the SSL flag
+        $connection->real_connect($host, $user, $password, $database, (int) $port, NULL, MYSQLI_CLIENT_SSL);
 
         if ($connection->connect_error) {
             $connection = null;
-            $_SESSION['db_error'] = 'Database connection failed. Check MySQL is running and your DB settings are correct.';
+            $_SESSION['db_error'] = 'Database connection failed: ' . $connection->connect_error;
         }
     } catch (Throwable $e) {
         $connection = null;
@@ -26,7 +32,7 @@ if (!empty($host) && !empty($user) && !empty($database)) {
 }
 
 if (!$connection) {
-    $_SESSION['db_error'] = 'Missing or invalid MySQL environment variables. Set DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, and DB_PORT in Vercel.';
+    $_SESSION['db_error'] = 'Missing or invalid MySQL environment variables.';
 }
 
 if ($connection) {
